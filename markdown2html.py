@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-This script converts a Markdown file to HTML, handling headings, unordered lists, and ordered lists.
+This script converts a Markdown file to HTML, handling headings, lists, and paragraphs.
 Usage: ./markdown2html.py <input_file> <output_file>
 """
 
@@ -9,7 +9,7 @@ import os
 
 def convert_markdown_to_html(input_file, output_file):
     """
-    Converts Markdown headings, unordered lists, and ordered lists to HTML and writes the result to the output file.
+    Converts Markdown headings, lists, and paragraphs to HTML and writes the result to the output file.
     """
     with open(input_file, 'r') as md_file:
         lines = md_file.readlines()
@@ -17,13 +17,30 @@ def convert_markdown_to_html(input_file, output_file):
     html_lines = []
     in_list = False
     list_type = None
+    in_paragraph = False
+    paragraph_lines = []
+
+    def close_list():
+        nonlocal in_list, list_type
+        if in_list:
+            html_lines.append(f'</{list_type}>')
+            in_list = False
+            list_type = None
+
+    def close_paragraph():
+        nonlocal in_paragraph, paragraph_lines
+        if in_paragraph:
+            html_lines.append('<p>')
+            html_lines.extend(paragraph_lines)
+            html_lines.append('</p>')
+            in_paragraph = False
+            paragraph_lines = []
 
     for line in lines:
         line = line.strip()
         if line.startswith('#'):
-            if in_list:
-                html_lines.append(f'</{list_type}>')
-                in_list = False
+            close_list()
+            close_paragraph()
             # Handle headings
             heading_level = len(line.split()[0])
             if 1 <= heading_level <= 6:
@@ -31,24 +48,28 @@ def convert_markdown_to_html(input_file, output_file):
                 html_line = f"<h{heading_level}>{heading_text}</h{heading_level}>"
                 html_lines.append(html_line)
         elif line.startswith('- ') or line.startswith('* '):
+            close_paragraph()
             # Handle list items
             if not in_list or (in_list and list_type != ('ul' if line.startswith('- ') else 'ol')):
-                if in_list:
-                    html_lines.append(f'</{list_type}>')
+                close_list()
                 list_type = 'ul' if line.startswith('- ') else 'ol'
                 html_lines.append(f'<{list_type}>')
                 in_list = True
             list_item = line[2:].strip()
             html_lines.append(f"<li>{list_item}</li>")
+        elif line:
+            close_list()
+            # Handle paragraph content
+            if not in_paragraph:
+                close_paragraph()
+                in_paragraph = True
+            paragraph_lines.append(line)
         else:
-            if in_list:
-                html_lines.append(f'</{list_type}>')
-                in_list = False
-            # For now, we'll ignore other lines
-            continue
+            close_list()
+            close_paragraph()
 
-    if in_list:
-        html_lines.append(f'</{list_type}>')
+    close_list()
+    close_paragraph()
 
     with open(output_file, 'w') as html_file:
         html_file.write('\n'.join(html_lines))
