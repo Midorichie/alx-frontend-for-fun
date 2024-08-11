@@ -1,15 +1,22 @@
 #!/usr/bin/python3
 """
-This script converts a Markdown file to HTML, handling headings, lists, and paragraphs.
+This script converts a Markdown file to HTML, handling headings, lists, paragraphs, and text emphasis.
 Usage: ./markdown2html.py <input_file> <output_file>
 """
 
 import sys
 import os
+import re
+
+def convert_emphasis(text):
+    """Convert bold and italic markdown to HTML"""
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)  # Bold
+    text = re.sub(r'__(.+?)__', r'<em>\1</em>', text)    # Italic
+    return text
 
 def convert_markdown_to_html(input_file, output_file):
     """
-    Converts Markdown headings, lists, and paragraphs to HTML and writes the result to the output file.
+    Converts Markdown to HTML and writes the result to the output file.
     """
     with open(input_file, 'r') as md_file:
         lines = md_file.readlines()
@@ -31,7 +38,7 @@ def convert_markdown_to_html(input_file, output_file):
         nonlocal in_paragraph, paragraph_lines
         if in_paragraph:
             html_lines.append('<p>')
-            html_lines.extend(paragraph_lines)
+            html_lines.extend(convert_emphasis(line) for line in paragraph_lines)
             html_lines.append('</p>')
             in_paragraph = False
             paragraph_lines = []
@@ -45,7 +52,7 @@ def convert_markdown_to_html(input_file, output_file):
             heading_level = len(line.split()[0])
             if 1 <= heading_level <= 6:
                 heading_text = line.lstrip('#').strip()
-                html_line = f"<h{heading_level}>{heading_text}</h{heading_level}>"
+                html_line = f"<h{heading_level}>{convert_emphasis(heading_text)}</h{heading_level}>"
                 html_lines.append(html_line)
         elif line.startswith('- ') or line.startswith('* '):
             close_paragraph()
@@ -56,7 +63,7 @@ def convert_markdown_to_html(input_file, output_file):
                 html_lines.append(f'<{list_type}>')
                 in_list = True
             list_item = line[2:].strip()
-            html_lines.append(f"<li>{list_item}</li>")
+            html_lines.append(f"<li>{convert_emphasis(list_item)}</li>")
         elif line:
             close_list()
             # Handle paragraph content
