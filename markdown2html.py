@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-This script converts a Markdown file to HTML, focusing on heading syntax.
+This script converts a Markdown file to HTML, handling headings and unordered lists.
 Usage: ./markdown2html.py <input_file> <output_file>
 """
 
@@ -9,26 +9,42 @@ import os
 
 def convert_markdown_to_html(input_file, output_file):
     """
-    Converts Markdown headings to HTML and writes the result to the output file.
+    Converts Markdown headings and unordered lists to HTML and writes the result to the output file.
     """
     with open(input_file, 'r') as md_file:
         lines = md_file.readlines()
 
     html_lines = []
+    in_list = False
+
     for line in lines:
         line = line.strip()
         if line.startswith('#'):
-            # Count the number of '#' symbols
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            # Handle headings
             heading_level = len(line.split()[0])
             if 1 <= heading_level <= 6:
-                # Extract the heading text
                 heading_text = line.lstrip('#').strip()
-                # Generate the HTML heading
                 html_line = f"<h{heading_level}>{heading_text}</h{heading_level}>"
                 html_lines.append(html_line)
+        elif line.startswith('- '):
+            # Handle unordered list items
+            if not in_list:
+                html_lines.append('<ul>')
+                in_list = True
+            list_item = line[2:].strip()
+            html_lines.append(f"<li>{list_item}</li>")
         else:
-            # For now, we'll ignore non-heading lines
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            # For now, we'll ignore other lines
             continue
+
+    if in_list:
+        html_lines.append('</ul>')
 
     with open(output_file, 'w') as html_file:
         html_file.write('\n'.join(html_lines))
