@@ -313,7 +313,7 @@
       ============================= */
 
   .section-about-us [class^="col-"] {
-  align-self: center;
+    align-self: center;
   }
 
   .section {
