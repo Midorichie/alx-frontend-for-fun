@@ -374,6 +374,11 @@
     padding: 10rem 40rem 2rem 0;
   }
   
+  /* Section SERVICES ============================= */
+  .section-services .row {
+    flex-wrap: wrap;
+  }
+  
   /*** 4. CARD ***/
   
   /* Card (all styles)
