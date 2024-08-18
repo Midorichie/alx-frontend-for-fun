@@ -311,9 +311,6 @@
   
   /* Section (all styles)
       ============================= */
-  .section-about-us [class^="col-"] {
-    align-self: center;
-  }
 
   .section {
     padding: var(--section-padding);
@@ -349,6 +346,12 @@
     text-align: var(--section-footer-align);
   }
   
+  /* Section ABOUT US
+      ============================= */
+  .section-about-us [class^="col-"] {
+    align-self: center;
+  }
+
   /* Section theming
       ============================= */
   
